@@ -13,17 +13,19 @@ class SignInPage extends StatefulWidget {
 }
 
 class _SignInPageState extends State<SignInPage> {
-  Future<void> addVoter(String sessionID) async {
+  Future<Credentials> addVoter(String sessionID) async {
     CollectionReference sessionDB =
         FirebaseFirestore.instance.collection(sessionID);
     String UID = FirebaseAuth.instance.currentUser!.uid;
-    final address = await generateWallet().extractAddress();
-    return sessionDB
+    final credentials = generateWallet();
+    final address = await credentials.extractAddress();
+    await sessionDB
         .add({
           UID: address.hex // 42
         })
         .then((value) => print("Voter Added"))
         .catchError((error) => print("Failed to add user: $error"));
+    return credentials;
   }
 
   Credentials generateWallet() {
