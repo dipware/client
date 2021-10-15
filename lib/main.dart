@@ -1,32 +1,69 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
 
 void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(
+    MaterialApp(
+      home: VoterClientApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class VoterClientApp extends StatefulWidget {
+  const VoterClientApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
+  @override
+  State<VoterClientApp> createState() => _VoterClientAppState();
+}
+
+class _VoterClientAppState extends State<VoterClientApp> {
+  final Future<FirebaseApp> _init = Firebase.initializeApp();
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Voting Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'Voting Demo Home Page'),
-    );
+    return FutureBuilder(
+        future: _init,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            throw FirebaseException(
+                plugin: "firebase_core", message: "Error in initialization");
+          }
+          if (snapshot.connectionState == ConnectionState.done) {
+            final _auth = FirebaseAuth.instance.signInAnonymously();
+            _auth.then((value) {
+              print(value);
+              print(value.user);
+            });
+            return FutureBuilder(
+                future: _auth,
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    throw FirebaseException(
+                        plugin: "firebase_core",
+                        message: "Error in initialization");
+                  }
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    return MyHomePage();
+                  }
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                });
+          }
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        });
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  final String title;
+  const MyHomePage({Key? key}) : super(key: key);
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
