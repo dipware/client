@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:client/routes/ballot.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -75,28 +76,13 @@ class _SignInPageState extends State<SignInPage> {
             onPressed: () async {
               credentials ??= generateWallet();
               final address = await credentials!.extractAddress();
-              showDialog(
-                context: context,
-                builder: (_) {
-                  const size = 280.0;
-                  return Dialog(
-                    child: CustomPaint(
-                      size: const Size.square(size),
-                      painter: QrPainter(
-                        data: address.hex,
-                        version: QrVersions.auto,
-                        eyeStyle: const QrEyeStyle(
-                          eyeShape: QrEyeShape.square,
-                          color: Colors.black,
-                        ),
-                        dataModuleStyle: const QrDataModuleStyle(
-                          dataModuleShape: QrDataModuleShape.square,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                  );
-                },
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BallotPage(
+                    credentials: credentials!,
+                  ),
+                ),
               );
             },
             child: const Text("Sign Up!"),
